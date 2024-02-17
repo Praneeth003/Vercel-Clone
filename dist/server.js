@@ -14,8 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const generateId_1 = __importDefault(require("./generateId"));
+const generateId_1 = __importDefault(require("./utils/generateId"));
 const simple_git_1 = __importDefault(require("simple-git"));
+const path_1 = __importDefault(require("path"));
+const getAllFiles_1 = require("./utils/getAllFiles");
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
@@ -24,7 +26,11 @@ app.post('/deploy', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     console.log(repoUrl);
     const id = (0, generateId_1.default)();
     console.log(id);
-    yield (0, simple_git_1.default)().clone(repoUrl, `output/${id}`);
+    yield (0, simple_git_1.default)().clone(repoUrl, path_1.default.join(__dirname, `output/${id}`));
+    const files = (0, getAllFiles_1.getAllFiles)(path_1.default.join(__dirname, `output/${id}`));
+    files.forEach(file => {
+        console.log(file);
+    });
     res.json({ id: id });
 }));
 app.listen(4000, () => {
