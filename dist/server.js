@@ -25,6 +25,7 @@ app.post('/deploy', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     const id = (0, generateId_1.default)();
     console.log(id);
     yield (0, simple_git_1.default)().clone(repoUrl, `output/${id}`);
+    res.json({ id: id });
 }));
 app.listen(4000, () => {
     console.log('Server is running on port 4000');

@@ -13,6 +13,7 @@ app.post('/deploy', async (req,res) => {
     const id = generateUniqueId();
     console.log(id);
     await simpleGit().clone(repoUrl, `output/${id}`);
+    res.json({id: id});
 })
 
 
