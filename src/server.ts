@@ -18,13 +18,14 @@ app.post('/deploy', async (req,res) => {
     
     const id = generateUniqueId();
     console.log(id);
-    
+
     // Clone the repository and save it in the output folder with the id as the folder name in the output folder
     await simpleGit().clone(repoUrl, path.join(__dirname,`output/${id}`));
 
+    // Get all the files in the output folder and upload them to the bucket
     const files = getAllFiles(path.join(__dirname,`output/${id}`));
     files.forEach(file => {
-        console.log(file);
+        uploadFile(file.slice(file.indexOf("dist") + "dist".length + 1) ,file)
     });
 
     res.json({id: id});
