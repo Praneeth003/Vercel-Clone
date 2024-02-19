@@ -5,6 +5,7 @@ import simpleGit from "simple-git";
 import path from "path";
 import { getAllFiles } from './utils/getAllFiles';
 
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -17,7 +18,7 @@ app.post('/deploy', async (req,res) => {
     const id = generateUniqueId();
     console.log(id);
     
-    // Clone the repository and save it in the output folder
+    // Clone the repository and save it in the output folder with the id as the folder name in the output folder
     await simpleGit().clone(repoUrl, path.join(__dirname,`output/${id}`));
 
     const files = getAllFiles(path.join(__dirname,`output/${id}`));

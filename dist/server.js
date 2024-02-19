@@ -26,6 +26,7 @@ app.post('/deploy', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     console.log(repoUrl);
     const id = (0, generateId_1.default)();
     console.log(id);
+    // Clone the repository and save it in the output folder with the id as the folder name in the output folder
     yield (0, simple_git_1.default)().clone(repoUrl, path_1.default.join(__dirname, `output/${id}`));
     const files = (0, getAllFiles_1.getAllFiles)(path_1.default.join(__dirname, `output/${id}`));
     files.forEach(file => {
