@@ -4,6 +4,7 @@ import generateUniqueId from './utils/generateId';
 import simpleGit from "simple-git";
 import path from "path";
 import { getAllFiles } from './utils/getAllFiles';
+import { uploadFile } from './utils/aws';
 
 
 const app = express();
