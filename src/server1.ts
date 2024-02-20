@@ -5,7 +5,7 @@ import simpleGit from "simple-git";
 import path from "path";
 import { getAllFiles } from './utils/getAllFiles';
 import { uploadFile } from './utils/aws';
-
+import { createClient } from 'redis';
 
 const app = express();
 app.use(cors());
@@ -27,6 +27,14 @@ app.post('/deploy', async (req,res) => {
     files.forEach(file => {
         uploadFile(file.slice(file.indexOf("dist") + "dist".length + 1) ,file)
     });
+
+
+    // Create a redis client
+    const publisher = createClient();
+    publisher.connect();
+
+    // Push the id to the deploy queue
+    publisher.lPush('deploy', id);
 
     res.json({id: id});
 })
