@@ -23,6 +23,9 @@ const redis_1 = require("redis");
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+// Create a redis client
+const publisher = (0, redis_1.createClient)();
+publisher.connect();
 app.post('/deploy', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const repoUrl = req.body.repoUrl;
     console.log(repoUrl);
@@ -35,9 +38,6 @@ app.post('/deploy', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     files.forEach(file => {
         (0, aws_1.uploadFile)(file.slice(file.indexOf("dist") + "dist".length + 1), file);
     });
-    // Create a redis client
-    const publisher = (0, redis_1.createClient)();
-    publisher.connect();
     // Push the id to the deploy queue
     publisher.lPush('deploy', id);
     res.json({ id: id });

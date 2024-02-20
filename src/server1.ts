@@ -11,6 +11,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Create a redis client
+const publisher = createClient();
+publisher.connect();
 
 app.post('/deploy', async (req,res) => {
     const repoUrl = req.body.repoUrl;
@@ -27,11 +30,6 @@ app.post('/deploy', async (req,res) => {
     files.forEach(file => {
         uploadFile(file.slice(file.indexOf("dist") + "dist".length + 1) ,file)
     });
-
-
-    // Create a redis client
-    const publisher = createClient();
-    publisher.connect();
 
     // Push the id to the deploy queue
     publisher.lPush('deploy', id);
