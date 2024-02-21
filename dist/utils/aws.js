@@ -12,11 +12,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.downloadFilesFromS3 = exports.uploadFile = void 0;
+exports.buildProject = exports.downloadFilesFromS3 = exports.uploadFile = void 0;
 const aws_sdk_1 = require("aws-sdk");
 const fs_1 = __importDefault(require("fs"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
+const child_process_1 = require("child_process");
 dotenv_1.default.config();
 // Create an S3 instance with my credentials
 const s3 = new aws_sdk_1.S3({
@@ -34,6 +35,7 @@ const uploadFile = (fileName, localFilePath) => __awaiter(void 0, void 0, void 0
     console.log(response);
 });
 exports.uploadFile = uploadFile;
+// Download all the files from the bucket
 function downloadFilesFromS3(prefix) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -41,7 +43,6 @@ function downloadFilesFromS3(prefix) {
             Bucket: "vercelclone",
             Prefix: prefix
         }).promise();
-        // 
         const allPromises = ((_a = allFiles.Contents) === null || _a === void 0 ? void 0 : _a.map(({ Key }) => __awaiter(this, void 0, void 0, function* () {
             return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
                 if (!Key) {
@@ -67,3 +68,20 @@ function downloadFilesFromS3(prefix) {
     });
 }
 exports.downloadFilesFromS3 = downloadFilesFromS3;
+// build the project and save it in the output folder
+function buildProject(id) {
+    return new Promise((resolve) => {
+        var _a, _b;
+        const child = (0, child_process_1.exec)(`cd ${path_1.default.join(__dirname, `input/${id}`)} && npm install && npm run build`);
+        (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
+            console.log('stdout: ' + data);
+        });
+        (_b = child.stderr) === null || _b === void 0 ? void 0 : _b.on('data', function (data) {
+            console.log('stderr: ' + data);
+        });
+        child.on('close', function (code) {
+            resolve("");
+        });
+    });
+}
+exports.buildProject = buildProject;

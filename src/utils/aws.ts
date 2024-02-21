@@ -2,6 +2,7 @@ import { S3 } from 'aws-sdk';
 import fs from 'fs';
 import dotenv from 'dotenv';
 import path from 'path';
+import { exec, spawn } from 'child_process';
 
 
 dotenv.config();
@@ -23,13 +24,13 @@ export const uploadFile = async (fileName: string, localFilePath: string) => {
   console.log(response);
 }
 
+// Download all the files from the bucket
 export async function downloadFilesFromS3(prefix: string) {
     const allFiles = await s3.listObjectsV2({
         Bucket: "vercelclone",
         Prefix: prefix
     }).promise();
     
-    // 
     const allPromises = allFiles.Contents?.map(async ({Key}) => {
         return new Promise(async (resolve) => {
             if (!Key) {
@@ -53,4 +54,23 @@ export async function downloadFilesFromS3(prefix: string) {
     console.log("awaiting");
 
     await Promise.all(allPromises?.filter(x => x !== undefined));
+}
+
+// build the project and save it in the output folder
+export function buildProject(id: string) {
+    return new Promise((resolve) => {
+        const child = exec(`cd ${path.join(__dirname, `input/${id}`)} && npm install && npm run build`)
+
+        child.stdout?.on('data', function(data) {
+            console.log('stdout: ' + data);
+        });
+        child.stderr?.on('data', function(data) {
+            console.log('stderr: ' + data);
+        });
+
+        child.on('close', function(code) {
+           resolve("")
+        });
+
+    })
 }

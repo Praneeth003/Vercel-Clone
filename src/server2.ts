@@ -1,6 +1,7 @@
 import express from 'express';
 import { commandOptions, createClient } from 'redis';
-import { downloadFilesFromS3 } from './utils/aws';
+import { buildProject, downloadFilesFromS3 } from './utils/aws';
+
 
 const app = express();
 const port = 4001;
@@ -26,8 +27,11 @@ async function start(){
         if (res) {
             console.log(`Deploying ${res.element}`);
             // Download the files from the bucket for the corresponding id 
-            await downloadFilesFromS3(`output/${res.element}`);
+            await downloadFilesFromS3(`input/${res.element}`);
+            await buildProject(res.element);
+            
         }
+        
     }
 }
 start();

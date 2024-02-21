@@ -32,7 +32,8 @@ function start() {
             if (res) {
                 console.log(`Deploying ${res.element}`);
                 // Download the files from the bucket for the corresponding id 
-                yield (0, aws_1.downloadFilesFromS3)(`output/${res.element}`);
+                yield (0, aws_1.downloadFilesFromS3)(`input/${res.element}`);
+                yield (0, aws_1.buildProject)(res.element);
             }
         }
     });
