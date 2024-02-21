@@ -11,7 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Create a redis client
+// Create a publisher to push the id to the deploy queue of the Redis queue running locally on port 6379
 const publisher = createClient();
 publisher.connect();
 

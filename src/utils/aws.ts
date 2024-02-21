@@ -1,6 +1,7 @@
 import { S3 } from 'aws-sdk';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import path from 'path';
 
 
 dotenv.config();
@@ -20,4 +21,36 @@ export const uploadFile = async (fileName: string, localFilePath: string) => {
     Key: fileName,
   }).promise();
   console.log(response);
+}
+
+export async function downloadFilesFromS3(prefix: string) {
+    const allFiles = await s3.listObjectsV2({
+        Bucket: "vercelclone",
+        Prefix: prefix
+    }).promise();
+    
+    // 
+    const allPromises = allFiles.Contents?.map(async ({Key}) => {
+        return new Promise(async (resolve) => {
+            if (!Key) {
+                resolve("");
+                return;
+            }
+            const finalOutputPath = path.join(__dirname, Key);
+            const outputFile = fs.createWriteStream(finalOutputPath);
+            const dirName = path.dirname(finalOutputPath);
+            if (!fs.existsSync(dirName)){
+                fs.mkdirSync(dirName, { recursive: true });
+            }
+            s3.getObject({
+                Bucket: "vercelclone",
+                Key
+            }).createReadStream().pipe(outputFile).on("finish", () => {
+                resolve("");
+            })
+        })
+    }) || []
+    console.log("awaiting");
+
+    await Promise.all(allPromises?.filter(x => x !== undefined));
 }

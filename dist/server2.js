@@ -14,8 +14,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const redis_1 = require("redis");
+const aws_1 = require("./utils/aws");
 const app = (0, express_1.default)();
 const port = 4001;
+// Subscribe to the deploy queue on Redis running on port 6379 locally
 const subscriber = (0, redis_1.createClient)();
 subscriber.connect();
 subscriber.on('error', (err) => {
@@ -24,8 +26,14 @@ subscriber.on('error', (err) => {
 function start() {
     return __awaiter(this, void 0, void 0, function* () {
         while (true) {
+            // Pop the id from the right side of deploy queue
             const res = yield subscriber.brPop((0, redis_1.commandOptions)({ isolated: true }), 'deploy', 0);
             console.log(res);
+            if (res) {
+                console.log(`Deploying ${res.element}`);
+                // Download the files from the bucket for the corresponding id 
+                yield (0, aws_1.downloadFilesFromS3)(`output/${res.element}`);
+            }
         }
     });
 }
