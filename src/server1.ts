@@ -27,8 +27,8 @@ app.post('/deploy', async (req,res) => {
 
     // Get all the files in the input folder and upload them to the bucket
     const files = getAllFiles(path.join(__dirname,`input/${id}`));
-    files.forEach(file => {
-        uploadFile(file.slice(file.indexOf("dist") + "dist".length + 1) ,file)
+    files.forEach(async (file) => {
+        await uploadFile(file.slice(file.indexOf("dist") + "dist".length + 1) ,file);
     });
 
     // Push the id to the deploy queue

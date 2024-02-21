@@ -35,9 +35,9 @@ app.post('/deploy', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     yield (0, simple_git_1.default)().clone(repoUrl, path_1.default.join(__dirname, `input/${id}`));
     // Get all the files in the input folder and upload them to the bucket
     const files = (0, getAllFiles_1.getAllFiles)(path_1.default.join(__dirname, `input/${id}`));
-    files.forEach(file => {
-        (0, aws_1.uploadFile)(file.slice(file.indexOf("dist") + "dist".length + 1), file);
-    });
+    files.forEach((file) => __awaiter(void 0, void 0, void 0, function* () {
+        yield (0, aws_1.uploadFile)(file.slice(file.indexOf("dist") + "dist".length + 1), file);
+    }));
     // Push the id to the deploy queue
     publisher.lPush('deploy', id);
     res.json({ id: id });

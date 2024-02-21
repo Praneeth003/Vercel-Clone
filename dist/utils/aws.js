@@ -12,12 +12,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildProject = exports.downloadFilesFromS3 = exports.uploadFile = void 0;
+exports.uploadBuildFiles = exports.buildProject = exports.downloadFilesFromS3 = exports.uploadFile = void 0;
 const aws_sdk_1 = require("aws-sdk");
 const fs_1 = __importDefault(require("fs"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 const child_process_1 = require("child_process");
+const getAllFiles_1 = require("./getAllFiles");
 dotenv_1.default.config();
 // Create an S3 instance with my credentials
 const s3 = new aws_sdk_1.S3({
@@ -85,3 +86,13 @@ function buildProject(id) {
     });
 }
 exports.buildProject = buildProject;
+function uploadBuildFiles(id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const folderPath = path_1.default.join(__dirname, `input/${id}/build`);
+        const files = (0, getAllFiles_1.getAllFiles)(folderPath);
+        files.forEach(file => {
+            (0, exports.uploadFile)(file.replace(folderPath, `output/${id}`), file);
+        });
+    });
+}
+exports.uploadBuildFiles = uploadBuildFiles;

@@ -3,6 +3,7 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 import path from 'path';
 import { exec, spawn } from 'child_process';
+import { getAllFiles } from './getAllFiles';
 
 
 dotenv.config();
@@ -72,5 +73,13 @@ export function buildProject(id: string) {
            resolve("")
         });
 
+    })
+}
+
+export async function uploadBuildFiles(id: string){
+    const folderPath = path.join(__dirname, `input/${id}/build`);
+    const files = getAllFiles(folderPath);
+    files.forEach(file => {
+        uploadFile(file.replace(folderPath, `output/${id}`), file);
     })
 }

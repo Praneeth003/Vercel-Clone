@@ -1,6 +1,9 @@
 import express from 'express';
 import { commandOptions, createClient } from 'redis';
-import { buildProject, downloadFilesFromS3 } from './utils/aws';
+import { buildProject, downloadFilesFromS3, uploadBuildFiles } from './utils/aws';
+import { getAllFiles } from './utils/getAllFiles';
+import path from 'path';
+
 
 
 const app = express();
@@ -28,8 +31,14 @@ async function start(){
             console.log(`Deploying ${res.element}`);
             // Download the files from the bucket for the corresponding id 
             await downloadFilesFromS3(`input/${res.element}`);
-            await buildProject(res.element);
             
+            // Build the project
+            await buildProject(res.element);
+
+            // Get all the files from the folder where the build happened and upload them to the bucket
+            await uploadBuildFiles(res.element);
+            
+
         }
         
     }

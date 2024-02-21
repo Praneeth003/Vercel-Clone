@@ -33,7 +33,10 @@ function start() {
                 console.log(`Deploying ${res.element}`);
                 // Download the files from the bucket for the corresponding id 
                 yield (0, aws_1.downloadFilesFromS3)(`input/${res.element}`);
+                // Build the project
                 yield (0, aws_1.buildProject)(res.element);
+                // Get all the files from the folder where the build happened and upload them to the bucket
+                yield (0, aws_1.uploadBuildFiles)(res.element);
             }
         }
     });
