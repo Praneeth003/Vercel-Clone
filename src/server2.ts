@@ -42,7 +42,7 @@ async function start(){
             // Get all the files from the folder where the build happened and upload them to the bucket
             await uploadBuildFiles(res.element);
             
-            publisher.hSet("status", res.element, "deployed")
+            await publisher.hSet("status", res.element, "deployed")
         }        
     }
 }

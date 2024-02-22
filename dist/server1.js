@@ -26,6 +26,9 @@ app.use(express_1.default.json());
 // Create a publisher to push the id to the deploy queue of the Redis queue running locally on port 6379
 const publisher = (0, redis_1.createClient)();
 publisher.connect();
+// Create a subscriber to listen to the status of the deployment
+const subscriber = (0, redis_1.createClient)();
+subscriber.connect();
 app.post('/deploy', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const repoUrl = req.body.repoUrl;
     console.log(repoUrl);
@@ -40,7 +43,15 @@ app.post('/deploy', (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }));
     // Push the id to the deploy queue
     publisher.lPush('deploy', id);
+    publisher.hSet("status", id, "uploaded");
     res.json({ id: id });
+}));
+app.get("/status", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.query.id;
+    const response = yield subscriber.hGet("status", id);
+    res.json({
+        status: response
+    });
 }));
 app.listen(4000, () => {
     console.log('Server is running on port 4000');

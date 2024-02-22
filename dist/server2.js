@@ -23,6 +23,9 @@ subscriber.connect();
 subscriber.on('error', (err) => {
     console.error('Error connecting to Redis:', err);
 });
+// Create a publisher to push the status of the deployment
+const publisher = (0, redis_1.createClient)();
+publisher.connect();
 function start() {
     return __awaiter(this, void 0, void 0, function* () {
         while (true) {
@@ -37,6 +40,7 @@ function start() {
                 yield (0, aws_1.buildProject)(res.element);
                 // Get all the files from the folder where the build happened and upload them to the bucket
                 yield (0, aws_1.uploadBuildFiles)(res.element);
+                yield publisher.hSet("status", res.element, "deployed");
             }
         }
     });

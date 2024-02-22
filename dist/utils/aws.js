@@ -12,13 +12,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadBuildFiles = exports.buildProject = exports.downloadFilesFromS3 = exports.uploadFile = void 0;
+exports.obtainObject = exports.uploadBuildFiles = exports.buildProject = exports.downloadFilesFromS3 = exports.uploadFile = void 0;
 const aws_sdk_1 = require("aws-sdk");
 const fs_1 = __importDefault(require("fs"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const path_1 = __importDefault(require("path"));
-const child_process_1 = require("child_process");
 const getAllFiles_1 = require("./getAllFiles");
+const child_process_1 = require("child_process");
+const util_1 = require("util");
+const fs_2 = require("fs");
+const exec = (0, util_1.promisify)(child_process_1.exec);
 dotenv_1.default.config();
 // Create an S3 instance with my credentials
 const s3 = new aws_sdk_1.S3({
@@ -45,44 +48,32 @@ function downloadFilesFromS3(prefix) {
             Prefix: prefix
         }).promise();
         const allPromises = ((_a = allFiles.Contents) === null || _a === void 0 ? void 0 : _a.map(({ Key }) => __awaiter(this, void 0, void 0, function* () {
-            return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
-                if (!Key) {
-                    resolve("");
-                    return;
-                }
-                const finalOutputPath = path_1.default.join(__dirname, Key);
-                const outputFile = fs_1.default.createWriteStream(finalOutputPath);
-                const dirName = path_1.default.dirname(finalOutputPath);
-                if (!fs_1.default.existsSync(dirName)) {
-                    fs_1.default.mkdirSync(dirName, { recursive: true });
-                }
-                s3.getObject({
-                    Bucket: "vercelclone",
-                    Key
-                }).createReadStream().pipe(outputFile).on("finish", () => {
-                    resolve("");
-                });
-            }));
+            if (!Key) {
+                return;
+            }
+            const finalOutputPath = path_1.default.join(__dirname, Key);
+            const dirName = path_1.default.dirname(finalOutputPath);
+            yield fs_2.promises.mkdir(dirName, { recursive: true });
+            const outputFile = fs_1.default.createWriteStream(finalOutputPath);
+            const stream = s3.getObject({
+                Bucket: "vercelclone",
+                Key
+            }).createReadStream();
+            return new Promise((resolve, reject) => {
+                stream.pipe(outputFile).on("finish", resolve).on("error", reject);
+            });
         }))) || [];
         console.log("awaiting");
-        yield Promise.all(allPromises === null || allPromises === void 0 ? void 0 : allPromises.filter(x => x !== undefined));
+        yield Promise.all(allPromises);
     });
 }
 exports.downloadFilesFromS3 = downloadFilesFromS3;
 // build the project and save it in the output folder
 function buildProject(id) {
-    return new Promise((resolve) => {
-        var _a, _b;
-        const child = (0, child_process_1.exec)(`cd ${path_1.default.join(__dirname, `input/${id}`)} && npm install && npm run build`);
-        (_a = child.stdout) === null || _a === void 0 ? void 0 : _a.on('data', function (data) {
-            console.log('stdout: ' + data);
-        });
-        (_b = child.stderr) === null || _b === void 0 ? void 0 : _b.on('data', function (data) {
-            console.log('stderr: ' + data);
-        });
-        child.on('close', function (code) {
-            resolve("");
-        });
+    return __awaiter(this, void 0, void 0, function* () {
+        const { stdout, stderr } = yield exec(`cd ${path_1.default.join(__dirname, `input/${id}`)} && npm install && npm run build`);
+        console.log('stdout:', stdout);
+        console.log('stderr:', stderr);
     });
 }
 exports.buildProject = buildProject;
@@ -96,3 +87,11 @@ function uploadBuildFiles(id) {
     });
 }
 exports.uploadBuildFiles = uploadBuildFiles;
+const obtainObject = (prefix, id) => __awaiter(void 0, void 0, void 0, function* () {
+    const contents = yield s3.getObject({
+        Bucket: "vercelclone",
+        Key: `output/${id}${prefix}`
+    }).promise();
+    return contents;
+});
+exports.obtainObject = obtainObject;
