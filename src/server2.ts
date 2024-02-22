@@ -17,6 +17,10 @@ subscriber.on('error', (err) => {
   console.error('Error connecting to Redis:', err);
 });
 
+// Create a publisher to push the status of the deployment
+const publisher = createClient();
+publisher.connect();
+
 async function start(){
     while(true){
         // Pop the id from the right side of deploy queue
@@ -38,9 +42,8 @@ async function start(){
             // Get all the files from the folder where the build happened and upload them to the bucket
             await uploadBuildFiles(res.element);
             
-
-        }
-        
+            publisher.hSet("status", res.element, "deployed")
+        }        
     }
 }
 start();

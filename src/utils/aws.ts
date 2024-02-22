@@ -83,3 +83,12 @@ export async function uploadBuildFiles(id: string){
         uploadFile(file.replace(folderPath, `output/${id}`), file);
     })
 }
+
+export const obtainObject = async (prefix: string, id: string) => {
+    const contents = await s3.getObject({
+        Bucket: "vercelclone",
+        Key: `output/${id}${prefix}`
+    }).promise();
+    return contents;
+}
+
